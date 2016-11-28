@@ -1,0 +1,177 @@
+# --- %YAML:1.0
+target_environment: test
+
+# ============================================================================
+# TEMPLATES dati/oggetti trasversali agli ambienti
+# ============================================================================
+templates:
+  mails:
+    EXAMPLE: # Identificativo
+      subject: "Oggetto della mail" # se omesso viene generato
+      body: "Corpo della mail" # se omesso viene generato
+
+# ============================================================================
+# Dati relativi all'ambiente di TEST
+# ============================================================================
+test:
+  url: mailenterprise.testmail.org/webmail/?cn=mycompany
+  users:
+    FAKEUSER:
+      userid: fakeuser
+      password: fakepassword
+    TEST_USER:
+      userid: samuel
+      password: samuel123
+      mailboxes:
+        - "lmen176-01@testmail.org"
+        - "lmen176-02@testmail.org"
+        - "testautolmen01@testmail.org"
+        - "testautolmen02@testmail.org"
+    FRANK:
+      userid: frank
+      password: frank123
+      mailboxes:
+        - lmen02@testmail.org
+        - lmen10@testmail.org
+        - lmex19-01@testmail.org
+        - lmex19-02@testmail.org
+        - test.carico.003@testmail.org
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # filtri pre-definiti (dato che contengono le mail sono legati all'ambiente)
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  filters:
+    EXAMPLE:
+      # Lista di condizioni
+      conditions:
+        -
+          # "Campo": proprietà su cui applicare il filtro [from, to, cc, subj, size, to/cc, id]
+          field: from
+          # "Tipo": condizione del filtro [includes, not_includes, endswith, not_endswith, startswith, not_startswith, equals, not_equals]
+          type: endswith
+          # "Contenuto": espressione del filtro
+          content: "infocert.it"
+        -
+          field: to
+          type: startswith
+          content: "ciao"
+        -
+          field: cc
+          type: not_includes
+          content: "ciaone"
+      # Operatore logico 'AND' o 'OR' tra le condizioni [OPTIONAL, il default è AND]
+      conditions_logic: or
+      action: move
+      action_to_value: test@mail.it#inbox
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # "Sposta in"
+    # Spostamento in sotto cartella "testautolmen01@testmail.org > inbox"
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    F1MV: # Condizione sul MITTENTE "lmen176-01@testmail.org"
+      conditions:
+        -
+          field: from
+          type: includes
+          content: "lmen176-01@testmail.org"
+      action: move
+      action_to_value: testautolmen01@testmail.org > inbox
+    F2MV: # Condizione sul DESTINATARIO "lmen176-02@testmail.org"
+      conditions:
+        -
+          field: to
+          type: includes
+          content: "lmen176-02@testmail.org"
+      action: move
+      action_to_value: testautolmen01@testmail.org > inbox
+    F3MV: # Condizione sull'OGGETTO "Test Automatici - Mail" (vedi message_subj_prefix in ui.yml)
+      conditions:
+        -
+          field: subj
+          type: includes
+          content: "Test Automatici - Mail"
+      action: move
+      action_to_value: testautolmen01@testmail.org > inbox
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # "Inoltra a"
+    # Le mail che soddisfano il filtro vengono inoltrate a "testautolmen01@testmail.org"
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    F1FW: # Condizione sul MITTENTE "lmen176-01@testmail.org"
+      conditions:
+        -
+          field: from
+          type: includes
+          content: "lmen176-01@testmail.org"
+      action: forward
+      action_to_value: "testautolmen01@testmail.org"
+    F2FW: # Condizione sul DESTINATARIO "lmen176-02@testmail.org"
+      conditions:
+        -
+          field: to
+          type: includes
+          content: "lmen176-02@testmail.org"
+      action: forward
+      action_to_value: "testautolmen01@testmail.org"
+    F3FW: # Condizione sull'OGGETTO "Test Automatici - Mail" (vedi message_subj_prefix in ui.yml)
+      conditions:
+        -
+          field: subj
+          type: includes
+          content: "Test Automatici - Mail"
+      action: forward
+      action_to_value: "testautolmen01@testmail.org"
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # "Copia in"
+    #  Copia in sotto cartella "testautolmen02@testmail.org > Avviso"
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    F1CP: # Condizione sul MITTENTE "lmen176-01@testmail.org"
+      conditions:
+        -
+          field: from
+          type: includes
+          content: "lmen176-01@testmail.org"
+      action: copy
+      action_to_value: "testautolmen02@testmail.org > warning"
+    F2CP: # Condizione sul DESTINATARIO "lmen176-02@testmail.org"
+      conditions:
+        -
+          field: to
+          type: includes
+          content: "lmen176-02@testmail.org"
+      action: copy
+      action_to_value: "testautolmen02@testmail.org > warning"
+    F3CP: # Condizione sull'OGGETTO "Test Automatici - Mail" (vedi message_subj_prefix in ui.yml)
+      conditions:
+        -
+          field: subj
+          type: includes
+          content: "Test Automatici - Mail"
+      action: copy
+      action_to_value: "testautolmen02@testmail.org > warning"
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # "Etichetta con"
+    # Assegna etichetta "Avviso"
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    F1LB: # Condizione sul MITTENTE "lmen176-01@testmail.org"
+      conditions:
+        -
+          field: from
+          type: includes
+          content: "lmen176-01@testmail.org"
+      action: label
+      action_to_value: warning
+    F2LB: # Condizione sul DESTINATARIO "lmen176-02@testmail.org"
+      conditions:
+        -
+          field: to
+          type: includes
+          content: "lmen176-02@testmail.org"
+      action: label
+      action_to_value: warning
+    F3LB: # Condizione sull'OGGETTO "Test Automatici - Mail" (vedi message_subj_prefix in ui.yml)
+      conditions:
+        -
+          field: subj
+          type: includes
+          content: "Test Automatici - Mail"
+      action: label
+      action_to_value: warning

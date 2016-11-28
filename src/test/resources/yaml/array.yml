@@ -1,0 +1,24 @@
+# --- %YAML:1.0
+key1:
+  key2: value2
+  array2:
+    -
+      key3:
+        key4: value4
+    -
+      key3:
+        array4:
+          - "value4A"
+          - "value4B"
+          - "value4C"
+          - "value4D"
+    -
+      key3:
+        array4:
+          - "value4A"
+          - "value4B"
+          - "value4C"
+          - "value4D"
+          - "value4E"
+          - "value4F"
+

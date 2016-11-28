@@ -1,0 +1,82 @@
+# --- %YAML:1.0
+################################################################################
+#
+#       Config information for RELM testing
+#
+################################################################################
+#
+#     Log mode configuration GLOBALE
+#
+GlobalConf:
+    LogMode: DEBG                                                           # test mode
+#   LogMode: INFO                                                           # test mode
+#   LogMode: ERR_                                                           # production mode
+#   LogMode: WARN                                                           # debug mode
+
+#   Browser: IExplorer
+    Browser: Firefox
+#   Profile: Webdriver
+#    Browser: Chrome
+#
+    runMode: Cucumber
+#   runMode: testnobrowser
+#   runMode: standAlone                                                     # implement cycling monitor
+#   runMode: passive                                                        # run mode: passive Nagios probe (send data to Nagios)
+#   runMode: Plugin                                                         # callled by Nagios
+
+#
+#  Global service Timeouts IN SECONDS
+#
+    PageTO: 30                                                              # max page load timeout
+    pollTime: 3                                                             # minutes between polling
+    testDuration: 3                                                         # test total duration
+    ContentTypes: text/csv,application/pdf,application/txt
+
+
+################################################################################
+# Output control configuration
+#
+
+outputInfo:
+    htmlInfo:                                                               # HTMLoutput
+        HTMLenable: true
+#       HTMLoutFile: cucumber_test.html
+
+    nscaInfo:
+        NSCAenable: false                                                               #
+        NSCAexeFile: 'c:/ProgramFiles/Util/send_nsca.exe'                               # full path name
+        NSCAconfigFile: 'f:/Home/Lavoro/Progetti/Github/cucumber/Cfg/send_nsca.cfg'     # full path name
+        NSCAserver: '192.168.254.20'
+        NSCAport: '5667'
+
+    resFile:                                                                # NSCA style local fiel output
+        ResFileEnable: false
+        ResFileName: './Log/output.cmd'                                     # full path name
+
+    screenInfo:
+        screenEnable: false # disabilita la scrittura in console drante l'esecuzione (meglio disabilitata sennò sporca l'output di Cucumber)
+        screenShotEnable: true
+
+    mailInfo:
+        mailEnable: false
+        mailToAddress: sergio@bosoconsulting.it
+        mailFromAddress: sergio@bosoconsulting.it
+        mailUser: sergio@bosoconsulting.it
+        mailPwd: xxx
+        mailSmpt: smtp.gmail.com
+        mailPort: 587
+
+################################################################################
+# Service specific analysis
+#       names & positioning
+#
+# Names must match the URL Table
+# Times in sec
+#
+serviceConf:
+    -
+        testType: CUCUMBER
+        server: Chrome
+        service: LMEN
+        warnTO: 120
+        critTO: 180
