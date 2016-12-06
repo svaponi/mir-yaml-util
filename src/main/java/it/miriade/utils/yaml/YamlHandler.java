@@ -3,6 +3,7 @@ package it.miriade.utils.yaml;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,19 +15,23 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 /**
- * Utility per leggere i file YAML. Dispone di getter compatibili con la
- * notazione property file, es. get("test.users.pippo.age")
+ * Utility per leggere i file YAML. Dispone di getter compatibili con la <i>Property File Syntax</i>, ovvero la
+ * notazione dei file di properties, dove il '.' indica il livello successivo/annidato.<br/>
+ * Esempio:
  * 
+ * <pre>
+ * YamlHandler yml = new YamlHandler("path/to/file.yml");
+ * Map<String, ?> data = yml.getMap("data");
+ * List<?> users = yml.getList("data.users");
+ * String name = yml.getString("data.users[0].name");
+ * int age = yml.getInteger("data.users[0].age");
+ * </pre>
+ * 
+ * @see <a href="http://yaml.org/spec/">http://yaml.org/spec/</a>
  * @author svaponi
- *
  */
 @SuppressWarnings("unchecked")
 public class YamlHandler {
-
-	// throwOnInvalidKey = false => ritorna NULL se la key è invalida o
-	// inesistente
-	// throwOnInvalidKey = true => solleva InvalidKeyException se la key è
-	// invalida o inesistente
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private String yamlFilePath;
@@ -47,7 +52,6 @@ public class YamlHandler {
 	}
 
 	/**
-	 * 
 	 * @param yamlFilePath
 	 *            path del file YAML
 	 * @param throwOnInvalidKey
@@ -59,7 +63,10 @@ public class YamlHandler {
 		this.yamlFilePath = yamlFilePath;
 		log.debug("Loading YAML file: {}", yamlFilePath);
 		try {
-			File yamlFile = new File(ClassLoader.getSystemResource(yamlFilePath).getPath());
+			URL resource = YamlHandler.class.getClassLoader().getResource(yamlFilePath);
+			if (resource == null)
+				throw new RuntimeException("Missing " + yamlFilePath);
+			File yamlFile = new File(resource.getPath());
 			this.yamlFileName = yamlFile.getName();
 			data = (Map<String, Object>) new Yaml().load(new FileInputStream(yamlFile));
 		} catch (IOException e) {
@@ -70,22 +77,47 @@ public class YamlHandler {
 		}
 	}
 
+	/**
+	 * @return
+	 * 		path assoluto al file YAML
+	 */
 	public String getYamlFilePath() {
 		return yamlFilePath;
 	}
 
+	/**
+	 * @return
+	 * 		nome del file YAML
+	 */
 	public String getYamlFileName() {
 		return yamlFileName;
 	}
 
-	public String getLoadErrorMessage() {
-		return loadErrorMessage;
-	}
-
+	/**
+	 * Indica se sono avvenuti degli errori durante l'inizializzazione dell'oggetto.
+	 * 
+	 * @return
+	 */
 	public boolean isLoadError() {
 		return loadError;
 	}
 
+	/**
+	 * Descrive il tipo di errore avvenuto durante l'inizializzazione.
+	 * 
+	 * @return
+	 */
+	public String getLoadErrorMessage() {
+		return loadErrorMessage;
+	}
+
+	/**
+	 * Indica il comportamento di {@link YamlHandler#get(String)} (e degli altri getters) in caso di key invalida.
+	 * 
+	 * @return
+	 * 		false: ritorna NULL se la key è invalida o inesistente <br/>
+	 *         true: solleva InvalidKeyException se la key è invalida o inesistente
+	 */
 	public boolean isThrowOnInvalidKey() {
 		return throwOnInvalidKey;
 	}
@@ -95,30 +127,32 @@ public class YamlHandler {
 	 */
 
 	public String getString(String key) {
-		return __get(String.class, key);
+		return genericGet(String.class, key);
 	}
 
 	public Integer getInteger(String key) {
-		return __get(Integer.class, key);
+		Number number = genericGet(Number.class, key);
+		return number == null ? null : number.intValue();
 	}
 
 	public Double getDouble(String key) {
-		return __get(Double.class, key);
+		Number number = genericGet(Number.class, key);
+		return number == null ? null : number.doubleValue();
 	}
 
 	public Boolean getBoolean(String key) {
-		return __get(Boolean.class, key);
+		return genericGet(Boolean.class, key);
 	}
 
 	public List<?> getList(String key) {
-		return __get(List.class, key);
+		return genericGet(List.class, key);
 	}
 
 	public Map<String, Object> getMap(String key) {
-		return __get(Map.class, key);
+		return genericGet(Map.class, key);
 	}
 
-	private <T> T __get(Class<T> clazz, String key) {
+	private <T> T genericGet(Class<T> clazz, String key) {
 		Object tmp = get(key);
 		if (tmp != null && !clazz.isAssignableFrom(tmp.getClass()))
 			throw new WrongTypeException("Actual type is " + tmp.getClass());
@@ -168,15 +202,15 @@ public class YamlHandler {
 	}
 
 	/**
-	 * Naviga l'oggetto Map secondo la notazione delle property dove il '.'
-	 * indice livello successivo.
+	 * Naviga l'oggetto Map secondo la notazione delle property, dove il '.'
+	 * indica il livello successivo.
 	 * 
 	 * @param key
 	 * @return
 	 */
 	public Object get(String key) {
 		try {
-			Object result = _get(key, data);
+			Object result = recursiveGet(key, data);
 			log.debug("[{}] {} = {}", yamlFileName, key, result);
 			return result;
 		} catch (InvalidKeyException e) {
@@ -187,7 +221,14 @@ public class YamlHandler {
 		}
 	}
 
-	private Object _get(String key, Map<String, Object> data) {
+	/**
+	 * Metodo ricorsivo per estrarre gli items dalla mappa usando
+	 * 
+	 * @param key
+	 * @param data
+	 * @return
+	 */
+	private Object recursiveGet(String key, Map<String, Object> data) {
 		if (key == null || key.isEmpty())
 			return "";
 
@@ -199,10 +240,10 @@ public class YamlHandler {
 		 * Controllo se la prima chiave (prima del primo punto) identifica un
 		 * array, in tal caso prendo l'elemento indicato dall'indice tra le [].
 		 */
-		Res res = detectArray(keys[0]);
+		ArrayResult res = detectArray(keys[0]);
 		Object tmp;
 		if (res != null) {
-			log.trace("Found array expression");
+			log.trace("Found array expression: {}", keys[0]);
 			tmp = data.get(res.key);
 			if (tmp instanceof List<?>)
 				try {
@@ -221,33 +262,44 @@ public class YamlHandler {
 		 * (identificati dal '.')
 		 */
 		if (tmp instanceof Map<?, ?> && key.contains("."))
-			return _get(key.substring(keys[0].length() + 1), (Map<String, Object>) tmp);
+			return recursiveGet(key.substring(keys[0].length() + 1), (Map<String, Object>) tmp);
 		else if (tmp != null)
 			return tmp;
 		else
 			throw new InvalidKeyException();
 	}
 
-	private static final Pattern r = Pattern.compile("(.*)\\[(\\d*)\\](.*)");
+	private static final Pattern isArray = Pattern.compile("(.*)\\[(\\d*)\\](.*)");
 
-	private Res detectArray(String key) {
-		Matcher m = r.matcher(key);
+	private ArrayResult detectArray(String key) {
+		Matcher m = isArray.matcher(key);
 		if (m.find())
-			return new Res(m.group(1), Integer.parseInt(m.group(2)));
+			return new ArrayResult(m.group(1), Integer.parseInt(m.group(2)));
 		return null;
 	}
 
-	private class Res {
+	/**
+	 * Classe che incapsula il risultato temporaneo che riscontro quando incontro un array lungo il percorso tracciato
+	 * dalla key nel property file.
+	 * 
+	 * @author svaponi
+	 */
+	private class ArrayResult {
 		String key;
 		int index;
 
-		public Res(String key, int index) {
+		public ArrayResult(String key, int index) {
 			super();
 			this.index = index;
 			this.key = key;
 		}
 	}
 
+	/**
+	 * Indica che è la key immessa non corrisponde ad un persorso valido nelle property del file.
+	 * 
+	 * @author svaponi
+	 */
 	public class InvalidKeyException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 
@@ -260,6 +312,11 @@ public class YamlHandler {
 		}
 	}
 
+	/**
+	 * Indica che è stato richiesto un oggetto di tipo diverso da quello dinamico.
+	 * 
+	 * @author svaponi
+	 */
 	public class WrongTypeException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 

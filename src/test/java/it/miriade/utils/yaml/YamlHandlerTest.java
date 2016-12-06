@@ -35,7 +35,7 @@ public class YamlHandlerTest extends YamlBaseTest {
 
 	@Test
 	public void t01_read_config() {
-		System.out.println("t01_read_config");
+		// System.out.println("t01_read_config");
 
 		for (String YAML_FILE : YAML_CONF_FILES) {
 			YamlHandler configYml = new YamlHandler(YAML_FILE);
@@ -50,12 +50,12 @@ public class YamlHandlerTest extends YamlBaseTest {
 			Assert.assertEquals(587, configYml.get("outputInfo.mailInfo.mailPort"));
 		}
 
-		System.out.println("t01_read_config > OK");
+		// System.out.println("t01_read_config > OK");
 	}
 
 	@Test
 	public void t02_read_data() {
-		System.out.println("t02_read_data");
+		// System.out.println("t02_read_data");
 
 		Assert.assertEquals("test", dataYml.get("target_environment"));
 		Assert.assertEquals("Oggetto della mail", dataYml.get("templates.mails.?.subject", "EXAMPLE"));
@@ -67,13 +67,13 @@ public class YamlHandlerTest extends YamlBaseTest {
 		Assert.assertEquals("samuel", dataYml.getString("test.users.?.userid", "TEST_USER"));
 		Assert.assertEquals("samuel123", dataYml.getString("test.users.?.password", "TEST_USER"));
 
-		System.out.println("t02_read_data > OK");
+		// System.out.println("t02_read_data > OK");
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	public void t03_read_array() {
-		System.out.println("t03_read_array");
+		// System.out.println("t03_read_array");
 
 		Assert.assertEquals("value4", arrayYmlNullOnInvalidKey.get("key1.array2[0].key3.key4"));
 		Assert.assertEquals("value4B", arrayYmlNullOnInvalidKey.get("key1.array2[1].key3.array4[1]"));
@@ -84,7 +84,7 @@ public class YamlHandlerTest extends YamlBaseTest {
 		for (String item : ((List<String>) array4))
 			Assert.assertEquals("Array items match", item, "value4" + ((char) letter++));
 
-		System.out.println("t03_read_array > OK");
+		// System.out.println("t03_read_array > OK");
 	}
 
 	@Rule
@@ -92,53 +92,53 @@ public class YamlHandlerTest extends YamlBaseTest {
 
 	@Test
 	public void t04_missing_key() {
-		System.out.println("t04_missing_key");
+		// System.out.println("t04_missing_key");
 
 		exception.expect(InvalidKeyException.class);
 		Assert.assertNull("Missing key", arrayYmlThrowOnInvalidKey.get("key1.array2[0].key3.key5"));
 
-		System.out.println("t04_missing_key > OK");
+		// System.out.println("t04_missing_key > OK");
 	}
 
 	@Test
 	public void t05_missing_key_2() {
-		System.out.println("t05_missing_key_2");
+		// System.out.println("t05_missing_key_2");
 
 		exception.expect(InvalidKeyException.class);
 		Assert.assertNull("Missing key", arrayYmlThrowOnInvalidKey.get("key1.array2[0].key9.key1"));
 
-		System.out.println("t05_missing_key_2 > OK");
+		// System.out.println("t05_missing_key_2 > OK");
 	}
 
 	@Test
 	public void t06_array_out_of_index() {
-		System.out.println("t06_array_out_of_index");
+		// System.out.println("t06_array_out_of_index");
 
 		exception.expect(InvalidKeyException.class);
 		Assert.assertNull("Array out of index", arrayYmlThrowOnInvalidKey.get("key1.array2[5].key3.key5"));
 
-		System.out.println("t06_array_out_of_index > OK");
+		// System.out.println("t06_array_out_of_index > OK");
 	}
 
 	@Test
 	public void t07_invalid_key() {
-		System.out.println("t07_invalid_key");
+		// System.out.println("t07_invalid_key");
 
 		exception.expect(InvalidKeyException.class);
 		Assert.assertNull("Missing intermediate key", arrayYmlThrowOnInvalidKey.get("key1.array9[0].key3.key5"));
 
-		System.out.println("t07_invalid_key > OK");
+		// System.out.println("t07_invalid_key > OK");
 	}
 
 	@Test
 	public void t08_return_null() {
-		System.out.println("t08_return_null");
+		// System.out.println("t08_return_null");
 
 		Assert.assertNull("Missing key", arrayYmlNullOnInvalidKey.get("key1.array2[0].key3.key5"));
 		Assert.assertNull("Missing key", arrayYmlNullOnInvalidKey.get("key1.array2[0].key9.key1"));
 		Assert.assertNull("Array out of index", arrayYmlNullOnInvalidKey.get("key1.array2[5].key3.key5"));
 		Assert.assertNull("Missing intermediate key", arrayYmlNullOnInvalidKey.get("key1.array9[0].key3.key5"));
 
-		System.out.println("t08_return_null > OK");
+		// System.out.println("t08_return_null > OK");
 	}
 }
