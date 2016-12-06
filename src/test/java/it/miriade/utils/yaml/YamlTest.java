@@ -34,7 +34,7 @@ public class YamlTest extends YamlBaseTest {
 
 	@Test
 	public void t01_read() {
-		System.out.println("t01_read");
+		// System.out.println("t01_read");
 		for (String YAML_FILE : YAML_FILES)
 			try {
 				Object result = yaml
@@ -46,12 +46,12 @@ public class YamlTest extends YamlBaseTest {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		System.out.println("t01_read > OK");
+		// System.out.println("t01_read > OK");
 	}
 
 	@Test
 	public void t02_dump() throws IOException {
-		System.out.println("t02_dump");
+		// System.out.println("t02_dump");
 		DumperOptions options = new DumperOptions();
 		options.setWidth(50);
 		options.setIndent(2);
@@ -79,13 +79,13 @@ public class YamlTest extends YamlBaseTest {
 		String output = yaml.dump(doc);
 
 		String outputFile = ClassLoader.getSystemResource(YAML_DIR).getFile() + "/dump.yml";
-		System.out.println("Writing file: " + outputFile);
+		// System.out.println("Writing file: " + outputFile);
 		new File(outputFile).delete();
 		try (PrintWriter printwriter = new PrintWriter(outputFile, "UTF-8")) {
 			printwriter.print(output);
 		}
 
-		System.out.println("Reading new file: " + outputFile);
+		// System.out.println("Reading new file: " + outputFile);
 		StringBuffer buf = new StringBuffer();
 		try (BufferedReader br = new BufferedReader(new FileReader(outputFile))) {
 			String sCurrentLine;
@@ -94,28 +94,28 @@ public class YamlTest extends YamlBaseTest {
 		}
 
 		Assert.assertEquals("Dumped file is not the same", output, buf.toString());
-		System.out.println("t02_dump > OK");
+		// System.out.println("t02_dump > OK");
 	}
 
 	@Test
 	public void t03_testLoadFromString() {
-		System.out.println("t03_testLoadFromString");
+		// System.out.println("t03_testLoadFromString");
 		String document = "hello: 25";
 		Map<?, ?> map = (Map<?, ?>) yaml.load(document);
 		Assert.assertEquals("{hello=25}", map.toString());
 		Assert.assertEquals(25, map.get("hello"));
-		System.out.println("t03_testLoadFromString > OK");
+		// System.out.println("t03_testLoadFromString > OK");
 	}
 
 	@Test
 	public void t04_testLoadFromStream() throws FileNotFoundException {
-		System.out.println("t04_testLoadFromStream");
+		// System.out.println("t04_testLoadFromStream");
 		File file = new File(ClassLoader.getSystemResource(YAML_UTF8_FILE).getPath());
 		InputStream input = new FileInputStream(file);
 		Object data = yaml.load(input);
 		Assert.assertEquals("test", data);
 		data = yaml.load(new ByteArrayInputStream("test2".getBytes()));
 		Assert.assertEquals("test2", data);
-		System.out.println("t04_testLoadFromStream > OK");
+		// System.out.println("t04_testLoadFromStream > OK");
 	}
 }
